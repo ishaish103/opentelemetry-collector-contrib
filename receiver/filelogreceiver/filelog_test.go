@@ -26,6 +26,8 @@ import (
 	"go.opentelemetry.io/collector/pipeline"
 	"go.opentelemetry.io/collector/receiver/receivertest"
 
+	"golang.org/x/text/encoding/unicode"
+
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal/consumerretry"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/pdatatest/plogtest"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/stanza/adapter"
@@ -36,7 +38,6 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/stanza/operator/parser/json"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/stanza/operator/parser/regex"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver/internal/metadata"
-	"golang.org/x/text/encoding/unicode"
 )
 
 func TestDefaultConfig(t *testing.T) {
@@ -381,7 +382,7 @@ func TestUTF16LEMultilineSAPAuditLog(t *testing.T) {
 	// Create a UTF-16LE encoded file with 10 SAP audit log records
 	// Each record starts with pattern: ([23])[A-Z][A-Z][A-Z0-9]\d{14}00
 	sapRecord := "2AUK20250227000000002316500018D110.102.8BATCH_ALRI                      SAPMSSY1                                0501Z91_VALR_IF&&Z91_VAL_PLSTATUS                                   10.122.81.29        "
-	
+
 	// Create 10 records concatenated (no newlines between them)
 	allRecords := ""
 	for i := 0; i < 10; i++ {
@@ -423,11 +424,11 @@ func TestUTF16LEMultilineSAPAuditLog(t *testing.T) {
 
 	// Verify we got exactly 10 log events
 	assert.Equal(t, 10, sink.LogRecordCount(), "expected 10 log events")
-	
+
 	// Verify each log event contains the SAP record pattern
 	allLogs := sink.AllLogs()
 	require.GreaterOrEqual(t, len(allLogs), 1, "expected at least 1 log resource")
-	
+
 	// Count total log records across all resources
 	totalRecords := 0
 	for i := 0; i < len(allLogs); i++ {
