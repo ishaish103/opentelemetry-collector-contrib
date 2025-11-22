@@ -87,24 +87,22 @@ func LineStartSplitFunc(re *regexp.Regexp, omitPattern, flushAtEOF bool, enc enc
 				if truncatedLen%2 != 0 {
 					truncatedLen--
 				}
-				if truncatedLen > 0 {
-					decoded, decodeErr = decoder.Bytes(data[:truncatedLen])
-					if decodeErr == nil {
-						data = data[:truncatedLen]
-					} else {
-						// If we still can't decode, flush at EOF
-						if flushAtEOF && len(data) > 0 {
-							return len(data), data, nil
-						}
-						return 0, nil, nil
-					}
-				} else {
+				if truncatedLen == 0 {
 					// If we still can't decode, flush at EOF
 					if flushAtEOF && len(data) > 0 {
 						return len(data), data, nil
 					}
 					return 0, nil, nil
 				}
+				decoded, decodeErr = decoder.Bytes(data[:truncatedLen])
+				if decodeErr != nil {
+					// If we still can't decode, flush at EOF
+					if flushAtEOF && len(data) > 0 {
+						return len(data), data, nil
+					}
+					return 0, nil, nil
+				}
+				data = data[:truncatedLen]
 			}
 			decodedStr := string(decoded)
 			firstLoc = re.FindStringIndex(decodedStr)
@@ -116,7 +114,8 @@ func LineStartSplitFunc(re *regexp.Regexp, omitPattern, flushAtEOF bool, enc enc
 				encoder := enc.NewEncoder()
 				// Allocate buffer for encoding (UTF-16LE uses 2 bytes per ASCII char, but allocate more for safety)
 				startBuf := make([]byte, len(matchStartStr)*4)
-				nDst, _, err := encoder.Transform(startBuf, []byte(matchStartStr), true)
+				var nDst int
+				nDst, _, err = encoder.Transform(startBuf, []byte(matchStartStr), true)
 				if err != nil {
 					// If encoding fails, fall back to UTF-8 matching
 					firstLoc = re.FindIndex(data)
@@ -125,7 +124,8 @@ func LineStartSplitFunc(re *regexp.Regexp, omitPattern, flushAtEOF bool, enc enc
 					}
 				} else {
 					endBuf := make([]byte, len(matchEndStr)*4)
-					nDstEnd, _, err := encoder.Transform(endBuf, []byte(matchEndStr), true)
+					var nDstEnd int
+					nDstEnd, _, err = encoder.Transform(endBuf, []byte(matchEndStr), true)
 					if err != nil {
 						firstLoc = re.FindIndex(data)
 						if firstLoc != nil {
@@ -200,7 +200,8 @@ func LineStartSplitFunc(re *regexp.Regexp, omitPattern, flushAtEOF bool, enc enc
 					matchStartStr := decodedStr[:secondLoc[0]]
 					encoder := enc.NewEncoder()
 					startBuf := make([]byte, len(matchStartStr)*4)
-					nDst, _, err := encoder.Transform(startBuf, []byte(matchStartStr), true)
+					var nDst int
+					nDst, _, err = encoder.Transform(startBuf, []byte(matchStartStr), true)
 					if err != nil {
 						return 0, nil, nil
 					}
@@ -254,24 +255,22 @@ func LineEndSplitFunc(re *regexp.Regexp, omitPattern, flushAtEOF bool, enc encod
 				if truncatedLen%2 != 0 {
 					truncatedLen--
 				}
-				if truncatedLen > 0 {
-					decoded, decodeErr = decoder.Bytes(data[:truncatedLen])
-					if decodeErr == nil {
-						data = data[:truncatedLen]
-					} else {
-						// If we still can't decode, flush at EOF
-						if flushAtEOF && len(data) > 0 {
-							return len(data), data, nil
-						}
-						return 0, nil, nil
-					}
-				} else {
+				if truncatedLen == 0 {
 					// If we still can't decode, flush at EOF
 					if flushAtEOF && len(data) > 0 {
 						return len(data), data, nil
 					}
 					return 0, nil, nil
 				}
+				decoded, decodeErr = decoder.Bytes(data[:truncatedLen])
+				if decodeErr != nil {
+					// If we still can't decode, flush at EOF
+					if flushAtEOF && len(data) > 0 {
+						return len(data), data, nil
+					}
+					return 0, nil, nil
+				}
+				data = data[:truncatedLen]
 			}
 			decodedStr := string(decoded)
 			loc = re.FindStringIndex(decodedStr)
@@ -282,7 +281,8 @@ func LineEndSplitFunc(re *regexp.Regexp, omitPattern, flushAtEOF bool, enc encod
 				encoder := enc.NewEncoder()
 				// Allocate buffer for encoding (UTF-16LE uses 2 bytes per ASCII char, but allocate more for safety)
 				startBuf := make([]byte, len(matchStartStr)*4)
-				nDst, _, err := encoder.Transform(startBuf, []byte(matchStartStr), true)
+				var nDst int
+				nDst, _, err = encoder.Transform(startBuf, []byte(matchStartStr), true)
 				if err != nil {
 					// If encoding fails, fall back to UTF-8 matching
 					loc = re.FindIndex(data)
@@ -291,7 +291,8 @@ func LineEndSplitFunc(re *regexp.Regexp, omitPattern, flushAtEOF bool, enc encod
 					}
 				} else {
 					endBuf := make([]byte, len(matchEndStr)*4)
-					nDstEnd, _, err := encoder.Transform(endBuf, []byte(matchEndStr), true)
+					var nDstEnd int
+					nDstEnd, _, err = encoder.Transform(endBuf, []byte(matchEndStr), true)
 					if err != nil {
 						loc = re.FindIndex(data)
 						if loc != nil {

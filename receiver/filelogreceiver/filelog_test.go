@@ -25,7 +25,6 @@ import (
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pipeline"
 	"go.opentelemetry.io/collector/receiver/receivertest"
-
 	"golang.org/x/text/encoding/unicode"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal/consumerretry"
